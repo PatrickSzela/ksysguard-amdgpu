@@ -102,8 +102,9 @@ If everything went OK the script is working fine and most likely the problem lie
 
 -   Test with other GPUs
 -   Test with more than one GPU
--   Add support for Vega 20 series
--   Add support for Northbridge voltages
+-   Add support for Vega 20 series ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/1))
+-   Add support for Northbridge voltages ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/2))
+-   Add sensors from Vega 10 and 20 series ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/3))
 -   Add support for non-average values (as separate sensors)
 -   Add support for multiple temperature sensors and fans
 -   Improve performance and code quality (any pointers are welcome)
