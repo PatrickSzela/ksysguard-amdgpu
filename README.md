@@ -4,7 +4,7 @@ A Python 3 script that allows user to monitor AMD GPUs in KSysGuard (**AMDGPU dr
 
 ![Screenshot](/screenshot.png)
 
-Features:
+### Features
 
 -   calculates average values of every sensor (looking at you `gpu_busy_percent`)
 -   supports multiple GPUs
