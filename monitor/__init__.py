@@ -15,19 +15,21 @@ class Monitor:
         self.unit = unit
         self.nice_name = nice_name
 
+        self.min = min
+        self.max = max
+        self.value = value
+
         # min and max won't be changing on runtime so no need to constantly reread them
         self.min = self.parse_unit(self.parse_value(
             self.handle_file(min), "min"), unit)
         self.max = self.parse_unit(self.parse_value(
             self.handle_file(max), "max"), unit)
 
-        # open file so current value can be continously read. If failed the monitor will be deleted
-        try:
-            self.value = self.open_file(value)
-        except FileNotFoundError as e:
-            self.value = None
-            # pass exception upward
-            raise
+        # open file so current value can be continously read. If it fails the monitor will be deleted
+        self.value = self.open_file(value)
+
+        # try parsing the file, if it fails the monitor will be deleted
+        self.get_value()
 
     def __del__(self):
         self.close_file(self.min)
@@ -36,6 +38,13 @@ class Monitor:
 
     def open_file(self, file: str) -> io.IOBase:
         """Opens `file` for reading"""
+        # TODO: and add support for multiple HWMONs and handle them in a better way
+        if file.startswith("./hwmon"):
+            for directory in next(os.walk(os.path.join(self.path, "hwmon")))[1]:
+                if directory.startswith("hwmon"):
+                    file = file.replace("./hwmon", f"./hwmon/{directory}")
+                    break
+
         return open(os.path.join(self.path, file), "r")
 
     def read_file(self, file: io.IOBase) -> str:
