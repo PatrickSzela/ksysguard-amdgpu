@@ -1,82 +1,66 @@
 import os
 import io
-from typing import Union
+import logging
 
-# TODO: set min, max and value when monitor is requested
 # TODO: instead of reading file directly use watch?
 
 
 class Monitor:
     """Class containing everything related to monitoring"""
 
-    def __init__(self, name: str, nice_name: str, min: Union[str, int], max: Union[str, int], value: Union[str, int], unit: str, path: str):
+    def __init__(self, card_id: str, name: str, path: str, data: object):
+        self.card_id = card_id
         self.name = name
         self.path = path
-        self.unit = unit
-        self.nice_name = nice_name
+        self.nice_name = data["nice_name"]
+        self.data = data
+        self.min = data["min"]
+        self.max = data["max"]
+        self.value = data["value"]
+        self.unit = data["unit"]
 
-        self.min = min
-        self.max = max
-        self.value = value
+        self.file_value = self.open_file(data["value"])
 
-        # min and max won't be changing on runtime so no need to constantly reread them
-        self.min = self.parse_unit(self.parse_value(
-            self.handle_file(min), "min"), unit)
-        self.max = self.parse_unit(self.parse_value(
-            self.handle_file(max), "max"), unit)
-
-        # open file so current value can be continously read. If it fails the monitor will be deleted
-        self.value = self.open_file(value)
-
-        # try parsing the file, if it fails the monitor will be deleted
+        # test time
         self.get_value()
+        self.get_info()
 
     def __del__(self):
-        self.close_file(self.min)
-        self.close_file(self.max)
-        self.close_file(self.value)
+        if isinstance(self.value, io.IOBase):
+            self.close_file(self.value)
 
     def open_file(self, file: str) -> io.IOBase:
         """Opens `file` for reading"""
         # TODO: and add support for multiple HWMONs and handle them in a better way
-        if file.startswith("./hwmon"):
+        if "hwmon" in file:
             for directory in next(os.walk(os.path.join(self.path, "hwmon")))[1]:
                 if directory.startswith("hwmon"):
-                    file = file.replace("./hwmon", f"./hwmon/{directory}")
+                    path = os.path.join(f"hwmon/{directory}", file["hwmon"])
                     break
+        else:
+            path = file["path"]
 
-        return open(os.path.join(self.path, file), "r")
+        return open(os.path.join(self.path, path), "r")
 
     def read_file(self, file: io.IOBase) -> str:
         """Reads content of the `file`"""
-        if isinstance(file, io.IOBase) and not file.closed:
-            file.seek(0, 0)
-            return file.read()
+        file.seek(0, 0)
+        return file.read()
 
     def close_file(self, file: io.IOBase) -> None:
         """Closes `file`"""
-        if isinstance(file, io.IOBase) and not file.closed:
-            file.close()
+        file.close()
 
-    def handle_file(self, file) -> Union[int, str]:
-        """Reads content of the `file`, automatically handling opening and closing it. If the file is not a path, returns it. If file doesn't exists, returns `-1`."""
-        try:
-            f = self.open_file(file)
-            value = self.read_file(f)
-            self.close_file(f)
-            return value
-        except FileNotFoundError:
-            # do not fail when file doesn't exists - min and max values aren't required for monitor to work
-            return -1
-        except:
-            return file
+    def handle_file(self, file: object) -> str:
+        """Reads content of the `file`, automatically handling opening and closing it"""
+        f = self.open_file(file)
+        value = self.read_file(f)
+        self.close_file(f)
+        return value
 
     def parse_value(self, value: str, type: str) -> int:
         """Parses the `value` depending on `type`"""
-        try:
-            return int(value)
-        except:
-            return -1
+        return int(value)
 
     # TODO: figure a better way to handle unit
     def parse_unit(self, value: int, unit: str) -> int:
@@ -91,10 +75,32 @@ class Monitor:
             value = round(value / 1000000)
         return value
 
-    def get_value(self) -> int:
-        """Returns (already parsed) current value"""
-        return self.parse_unit(self.parse_value(self.read_file(self.value), "value"), self.unit)
+    def get_value(self, type: str = "value") -> int:
+        """Returns (already parsed) value of `type`"""
+        if type == "value":
+            # "value" can contain only path and the file was already opened in __init__
+            value = self.read_file(self.file_value)
+        else:
+            value = self.handle_file(
+                self.data[type]) if not "value" in self.data[type] else self.data[type]["value"]
+
+        return self.parse_unit(self.parse_value(value, type), self.unit)
 
     def get_info(self) -> str:
-        """Returns info about monitor (name, min, max, unit)"""
-        return f"{self.nice_name}\t{self.min}\t{self.max}\t{self.unit}"
+        """Returns info about monitor (name, min, max, unit). If any values fails, it will be set to -1, or if it's required, will throw an exception"""
+        min = self.try_get_value("min")
+        max = self.try_get_value("max")
+
+        return f"{self.nice_name}\t{min}\t{max}\t{self.unit}"
+
+    def try_get_value(self, type: str):
+        """Tries to get a value of `type`. If it fails, it will return `-1` and print a warning (if logging is enabled)"""
+        try:
+            return self.get_value(type)
+        except Exception as e:
+            if "required" in self.data[type]:
+                raise e
+            else:
+                logging.warning(
+                    f"{self.card_id}/{self.name}:Failed to get {type} value:\n", exc_info=True)
+                return -1

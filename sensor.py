@@ -3,6 +3,7 @@
 import threading
 import os
 import argparse
+import logging
 from typing import Mapping
 from card import Card
 from monitor import Monitor
@@ -62,13 +63,13 @@ def on_exit(collectors: Mapping[str, Collector]):
 
 def main() -> int:
     """Main loop"""
-    print("ksysguardd 1.2.0")
-
     detected_cards = detect_cards(amdgpu_dir, pci_dir)
     for card_id, card in detected_cards.items():
-        cards[card_id] = Card(card)
+        cards[card_id] = Card(card_id, card)
 
     stop = threading.Event()
+
+    print("ksysguardd 1.2.0")
 
     while True:
         try:
@@ -89,7 +90,7 @@ def main() -> int:
                     card_id = command[0]
                     monitor = command[1][:-1] if info else command[1]
                 except:
-                    print("Bad command")
+                    print("Unrecognized command")
                 else:
                     if not card_id in cards:
                         print(f"Card with ID \"{card_id}\" not found")
@@ -116,7 +117,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="AMDGPU sensor for KSysGuard")
     parser.add_argument("--tick", dest="tick", type=float, default=tick,
                         help="time (in sec) how often should the sensor data be collected")
+    parser.add_argument("--logging", dest="logging", action="store_true",
+                        help="enables logging - use when something isn't working. Do not use this argument when adding the script to KSysGuard!")
     arguments = parser.parse_args()
     tick = arguments.tick
+
+    if not arguments.logging:
+        # disable logging when running in KSysGuard
+        logging.disable(logging.CRITICAL)
 
     main()
