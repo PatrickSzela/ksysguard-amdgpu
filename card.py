@@ -16,8 +16,8 @@ from monitor.list import monitor_list
 class Card:
     """Class containing everything related to cards"""
 
-    def __init__(self, name: str, path: str):
-        self.name = name
+    def __init__(self, pci_slot: str, path: str):
+        self.pci_slot = pci_slot
         self.path = path
         self.monitors: Mapping[str, Monitor] = self.detect_monitors()
 
@@ -29,11 +29,11 @@ class Card:
             if not monitor_name in detected_monitors.keys():
                 try:
                     monitor_class = monitor_data["class"] if "class" in monitor_data else Monitor
-                    monitor = monitor_class(self.name,
+                    monitor = monitor_class(self.pci_slot,
                                             monitor_name, self.path, monitor_data)
                 except Exception:
                     logging.warning(
-                        f"{self.name}/{monitor_name}:Failed to create monitor:\n", exc_info=True)
+                        f"{self.pci_slot}/{monitor_name}:Failed to create monitor:\n", exc_info=True)
                     continue
                 else:
                     detected_monitors[monitor_name] = monitor

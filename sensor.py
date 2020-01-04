@@ -17,7 +17,7 @@ collectors: Mapping[str, Collector] = {}
 
 
 def detect_cards(driver_path: str, pci_path: str) -> Mapping[str, str]:
-    """Returns dictionary (`card ID`, `real path`) of all detected cards by walking through every device registered to the driver (directories in `driver_path`) and checking whether it's a PCI device (target of these directories starts with `pci_path`).
+    """Returns dictionary (`PCI slot`, `real path`) of all detected cards by walking through every device registered to the driver (directories in `driver_path`) and checking whether it's a PCI device (target of these directories starts with `pci_path`).
     """
     cards = {}
 
@@ -32,21 +32,21 @@ def detect_cards(driver_path: str, pci_path: str) -> Mapping[str, str]:
 
 def print_monitors():
     """Prints all detected monitors of every card"""
-    for card_id, card_data in cards.items():
+    for pci_slot, card_data in cards.items():
         for monitor in card_data.monitors:
-            print(f"{card_id}/{monitor}\tinteger")
+            print(f"{pci_slot}/{monitor}\tinteger")
 
 
-def print_info(card_id: str, monitor_name: str) -> None:
-    """Prints info about monitor named `monitor_name` running on a card with ID `card_id`"""
-    if card_id in cards:
-        print(cards[card_id].get_info(monitor_name))
+def print_info(pci_slot: str, monitor_name: str) -> None:
+    """Prints info about monitor named `monitor_name` running on a card with `pci_slot`"""
+    if pci_slot in cards:
+        print(cards[pci_slot].get_info(monitor_name))
 
 
-def print_value(card_id: str, monitor_name: str) -> None:
-    """Prints current value of a monitor named `monitor_name` running on a card with ID `card_id`"""
-    if card_id in cards:
-        print(cards[card_id].get_value(monitor_name))
+def print_value(pci_slot: str, monitor_name: str) -> None:
+    """Prints current value of a monitor named `monitor_name` running on a card with `pci_slot`"""
+    if pci_slot in cards:
+        print(cards[pci_slot].get_value(monitor_name))
 
 
 def print_collector_value(collector: Collector, monitor: str) -> None:
@@ -64,8 +64,8 @@ def on_exit(collectors: Mapping[str, Collector]):
 def main() -> int:
     """Main loop"""
     detected_cards = detect_cards(amdgpu_dir, pci_dir)
-    for card_id, card in detected_cards.items():
-        cards[card_id] = Card(card_id, card)
+    for pci_slot, card in detected_cards.items():
+        cards[pci_slot] = Card(pci_slot, card)
 
     stop = threading.Event()
 
@@ -87,30 +87,30 @@ def main() -> int:
                 try:
                     info = command.endswith("?")
                     command = command.split("/")
-                    card_id = command[0]
+                    pci_slot = command[0]
                     monitor = command[1][:-1] if info else command[1]
                 except:
                     print("Unrecognized command")
                 else:
-                    if not card_id in cards:
-                        print(f"Card with ID \"{card_id}\" not found")
+                    if not pci_slot in cards:
+                        print(f"Card \"{pci_slot}\" not found")
                         continue
 
-                    if not monitor in cards[card_id].monitors:
+                    if not monitor in cards[pci_slot].monitors:
                         print(
-                            f"Monitor \"{monitor}\" not found in card \"{card_id}\"")
+                            f"Monitor \"{monitor}\" not found in card \"{pci_slot}\"")
                         continue
 
-                    if not card_id in collectors:
-                        collectors[card_id] = Collector(
-                            cards[card_id], tick, stop)
-                        collectors[card_id].start()
+                    if not pci_slot in collectors:
+                        collectors[pci_slot] = Collector(
+                            cards[pci_slot], tick, stop)
+                        collectors[pci_slot].start()
 
                     if info:
-                        collectors[card_id].request_monitor(monitor)
-                        print_info(card_id, monitor)
+                        collectors[pci_slot].request_monitor(monitor)
+                        print_info(pci_slot, monitor)
                     else:
-                        print_collector_value(collectors[card_id], monitor)
+                        print_collector_value(collectors[pci_slot], monitor)
 
 
 if __name__ == "__main__":

@@ -76,7 +76,7 @@ ksysguardd 1.2.0
 ksysguardd>
 ```
 
-1. Type `monitors` to get list of all available monitors (in `CARD_ID/SENSOR type` format)
+1. Type `monitors` to get list of all available monitors (in `PCI_SLOT/SENSOR type` format)
 
 ```
 ksysguardd> monitors
@@ -85,14 +85,14 @@ ksysguardd> monitors
 [...]
 ```
 
-2. Now type `CARD_ID/SENSOR?` to get info about a specific sensor - it should print out monitor info in a `name min max unit` format. This command is required for the one from next step to work!
+2. Now type `PCI_SLOT/SENSOR?` to get info about a specific sensor - it should print out monitor info in a `name min max unit` format. This command is required for the one from next step to work!
 
 ```
 ksysguardd> 0000:01:00.0/gpu_usage?
 GPU Usage       0       100     %
 ```
 
-3. Now type `CARD_ID/SENSOR` to get current value of the sensor
+3. Now type `PCI_SLOT/SENSOR` to get current value of the sensor
 
 ```
 ksysguardd> 0000:01:00.0/gpu_usage

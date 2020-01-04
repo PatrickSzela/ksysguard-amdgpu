@@ -8,8 +8,8 @@ import logging
 class Monitor:
     """Class containing everything related to monitoring"""
 
-    def __init__(self, card_id: str, name: str, path: str, data: object):
-        self.card_id = card_id
+    def __init__(self, card_pci_slot: str, name: str, path: str, data: object):
+        self.card_pci_slot = card_pci_slot
         self.name = name
         self.path = path
         self.nice_name = data["nice_name"]
@@ -102,5 +102,5 @@ class Monitor:
                 raise e
             else:
                 logging.warning(
-                    f"{self.card_id}/{self.name}:Failed to get {type} value:\n", exc_info=True)
+                    f"{self.card_pci_slot}/{self.name}:Failed to get {type} value:\n", exc_info=True)
                 return -1
