@@ -90,14 +90,14 @@ def main() -> int:
                     pci_slot = command[0]
                     monitor = command[1][:-1] if info else command[1]
                 except:
-                    print("Unrecognized command")
+                    logging.warning("Unrecognized command")
                 else:
                     if not pci_slot in cards:
-                        print(f"Card \"{pci_slot}\" not found")
+                        logging.warning(f"Card \"{pci_slot}\" not found")
                         continue
 
                     if not monitor in cards[pci_slot].monitors:
-                        print(
+                        logging.warning(
                             f"Monitor \"{monitor}\" not found in card \"{pci_slot}\"")
                         continue
 
