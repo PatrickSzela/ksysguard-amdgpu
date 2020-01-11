@@ -8,6 +8,7 @@ Python 3 script that allows user to monitor AMD GPUs in KSysGuard (**AMDGPU driv
 
 -   calculates average values of every sensor (looking at you `gpu_busy_percent`)
 -   supports multiple GPUs
+-   detects min and max values of sensors automatically
 -   doesn't require any special dependencies
 -   no root needed
 -   respects `Update interval` set in `Tab properties` in KSysGuard
@@ -21,6 +22,8 @@ Python 3 script that allows user to monitor AMD GPUs in KSysGuard (**AMDGPU driv
 -   read permission for files in `/sys/bus/pci/drivers/amdgpu/<PCI_SLOT>/*`
 
 ### Available sensors
+
+Based on [Linux Kernel Documentation](https://dri.freedesktop.org/docs/drm/gpu/amdgpu.html#gpu-power-thermal-controls-and-monitoring):
 
 | Sensor       | Unit |
 | ------------ | ---- |
@@ -76,7 +79,7 @@ ksysguardd 1.2.0
 ksysguardd>
 ```
 
-1. Type `monitors` to get list of all available monitors (in `PCI_SLOT/SENSOR type` format)
+1. Type `monitors` to get list of all available monitors (in `PCI_SLOT/SENSOR` format)
 
 ```
 ksysguardd> monitors
