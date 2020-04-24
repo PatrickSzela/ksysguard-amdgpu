@@ -22,8 +22,8 @@ class Monitor:
         self.file_value = self.open_file(data["value"])
 
         # test time
-        self.get_value()
         self.get_info()
+        self.try_get_value("value")
 
     def __del__(self):
         if isinstance(self.value, io.IOBase):
@@ -78,7 +78,7 @@ class Monitor:
     def get_value(self, type: str = "value") -> int:
         """Returns (already parsed) value of `type`"""
         if type == "value":
-            # "value" can contain only path and the file was already opened in __init__
+            # "value" can contain only path and the file was already opened in __init__, so just read its contents
             value = self.read_file(self.file_value)
         else:
             value = self.handle_file(
@@ -94,13 +94,18 @@ class Monitor:
         return f"{self.nice_name}\t{min}\t{max}\t{self.unit}"
 
     def try_get_value(self, type: str):
-        """Tries to get a value of `type`. If it fails, it will return `-1` and print a warning (if logging is enabled)"""
+        """Tries to get a value of `type`. If it fails, will throw an excpetion if the value is required, otherwise returns `0` and prints a warning (if logging is enabled)"""
         try:
-            return self.get_value(type)
+            value = self.get_value(type)
+            if value == -1:
+                file = self.data[type]["path"]
+                raise Exception(f"Failed to parse file: {self.path}/{file}")
+            return value
+
         except Exception as e:
             if "required" in self.data[type]:
                 raise e
             else:
                 logging.warning(
                     f"{self.card_pci_slot}/{self.name}:Failed to get {type} value:\n", exc_info=True)
-                return -1
+                return 0
