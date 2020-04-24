@@ -11,11 +11,11 @@ class GPUVoltageMonitor(Monitor):
                 ods = [line for line in value.split("OD_") if line != '']
 
                 # get values of OD_SCLK
-                od_mclk = [line for line in ods if line.startswith("SCLK")][0].splitlines()[
+                od_sclk = [line for line in ods if line.startswith("SCLK")][0].splitlines()[
                     1:]
 
                 # extract possible voltages sorted by states
-                values = [line.split()[-1][:-2] for line in od_mclk]
+                values = [line.split()[-1][:-2] for line in od_sclk]
 
                 return int(values[idx])
 
