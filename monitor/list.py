@@ -2,6 +2,9 @@ from monitor.gpu_clock import GPUClockMonitor
 from monitor.gpu_voltage import GPUVoltageMonitor
 from monitor.vram_clock import VRAMClockMonitor
 from monitor.vram_voltage import VRAMVoltageMonitor
+from monitor.soc_clock import SoCClockMonitor
+from monitor.dcef_clock import DCEFClockMonitor
+from monitor.f_clock import FClockMonitor
 
 # Info about sensors: https://dri.freedesktop.org/docs/drm/gpu/amdgpu.html#gpu-power-thermal-controls-and-monitoring
 monitor_list = {
@@ -123,5 +126,38 @@ monitor_list = {
             "required": True
         },
         "unit": ""
+    },
+    "soc_clock": {
+        "nice_name": "SoC Clock",
+        "min": {"path": "pp_dpm_socclk"},
+        "max": {"path": "pp_dpm_socclk"},
+        "value": {
+            "path": "pp_dpm_socclk",
+            "required": True
+        },
+        "unit": "MHz",
+        "class": SoCClockMonitor
+    },
+    "dcef_clock": {
+        "nice_name": "DCEF Clock",
+        "min": {"path": "pp_dpm_dcefclk"},
+        "max": {"path": "pp_dpm_dcefclk"},
+        "value": {
+            "path": "pp_dpm_dcefclk",
+            "required": True
+        },
+        "unit": "MHz",
+        "class": DCEFClockMonitor
+    },
+    "f_clock": {
+        "nice_name": "F Clock",
+        "min": {"path": "pp_dpm_fclk"},
+        "max": {"path": "pp_dpm_fclk"},
+        "value": {
+            "path": "pp_dpm_fclk",
+            "required": True
+        },
+        "unit": "MHz",
+        "class": FClockMonitor
     }
 }
