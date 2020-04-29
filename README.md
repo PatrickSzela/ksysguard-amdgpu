@@ -65,7 +65,7 @@ _HINT:_ If the `Monitor Remote Machine...` is missing, create new tab.
 
 ### Issues
 
--   If you have a GPU from Vega 20 series or later, `VRAM Voltage` sensor and `GPU Voltage` min and max values might be missing - with these GPUs the driver reports some data (`pp_od_clk_voltage` to be exact) in a different way and I haven't figured out (yet) a way how to detect them. Check [Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/1) if you would like to help!
+-   If you have a GPU from Vega 20 series or later, `VRAM Voltage` sensor might be missing - with these GPUs the driver reports some data (`pp_od_clk_voltage` file to be exact) in a different way and I haven't figured out (yet) a way how to detect it. Check [Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/1) if you would like to help!
 -   If a sensor is missing or its values are `-1` or `0`, it means that the script failed to read and/or parse a file - please read [Testing](#Testing) and include the output (with errors from `--logging` argument) when creating an Issue. Also, please include Linux Kernel version you're using.
 
 ### Testing
@@ -104,7 +104,7 @@ ksysguardd> 0000:01:00.0/gpu_usage
 
 ### TODO
 
--   Add support for Vega 20 series voltages ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/1))
+-   Add support for Vega 20 series VRAM voltage ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/1))
 -   Add support for Northbridge voltages ([Issue](https://github.com/PatrickSzela/ksysguard-amdgpu/issues/2))
 -   Add support for non-average values
 -   Add support for multiple temperature and fan sensors
